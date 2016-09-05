@@ -53,7 +53,8 @@ public class SQLHelperTest {
 
     @Test
     public void testQuery() throws Exception {
-        SQLHelper helper = new SQLHelper(DBHelper.initDataSource());
+        SQLHelper helper = new SQLHelper(DBHelper.
+                initDataSource(DBHelper.initConfig("local_database.properties")));
         Data data = helper.getEntity(1, Data.class);
         System.out.println(data);
     }
