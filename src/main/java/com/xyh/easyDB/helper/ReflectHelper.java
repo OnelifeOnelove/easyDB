@@ -1,6 +1,7 @@
 package com.xyh.easyDB.helper;
 
 import com.xyh.easyDB.annotation.Column;
+import com.xyh.easyDB.annotation.NoDBColumn;
 import com.xyh.easyDB.annotation.Table;
 
 import java.lang.reflect.Field;
@@ -24,6 +25,11 @@ public class ReflectHelper {
         return table.value();
     }
 
+    public String getTableName(Class clazz) {
+        Table table = (Table) clazz.getAnnotation(Table.class);
+        return table.value();
+    }
+
     /**
      * 获取所有非空字段
      */
@@ -37,8 +43,9 @@ public class ReflectHelper {
             field.setAccessible(true);
             String name;
             Object val = field.get(obj);
-            //字段值不为空且不为id时插入
-            if(val != null && !"id".equals(field.getName())) {
+            NoDBColumn flag = field.getAnnotation(NoDBColumn.class);
+            //字段值不为空且不为id，不带NoDBColumn注解时插入
+            if(val != null && !"id".equals(field.getName()) && flag == null) {
                 //存在Column注解读取注解里的值，不然使用字段值
                 Column meta = field.getAnnotation(Column.class);
                 if(meta != null) {
@@ -77,8 +84,8 @@ public class ReflectHelper {
     /**
      * 字段格式转换
      */
-    private String formatStr(String str) {
-        StringBuffer result = new StringBuffer();
+    public String formatStr(String str) {
+        StringBuilder result = new StringBuilder();
         for(Character c : str.toCharArray()) {
             if(Character.isUpperCase(c)) {
                 result.append('_');

@@ -1,5 +1,7 @@
 package com.xyh.easyDB.model;
 
+
+
 import com.xyh.easyDB.annotation.Column;
 import com.xyh.easyDB.annotation.Id;
 import com.xyh.easyDB.annotation.Table;

@@ -4,6 +4,7 @@ import com.xyh.easyDB.annotation.Table;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
@@ -38,12 +39,12 @@ public class SQLHelper {
         Map<String, Object> dataMap = helper.getColumns(obj);
         String tableName = helper.getTableName(obj);
 
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         sql.append("insert into ");
         sql.append(tableName);
         //拼接SQL
-        StringBuffer keyBuffer = new StringBuffer().append(" (");
-        StringBuffer valueBuffer = new StringBuffer().append(" (");
+        StringBuilder keyBuffer = new StringBuilder().append(" (");
+        StringBuilder valueBuffer = new StringBuilder().append(" (");
         int length = dataMap.size();
         for(String key : dataMap.keySet()) {
             keyBuffer.append(key);
@@ -75,7 +76,7 @@ public class SQLHelper {
             IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String tableName = helper.getTableName(obj);
         Object id = helper.getId(obj);
-        StringBuffer sql = new StringBuffer().append("delete from ");
+        StringBuilder sql = new StringBuilder().append("delete from ");
         sql.append(tableName);
         sql.append(" where id = ?");
         return qr.update(sql.toString(), id);
@@ -90,7 +91,7 @@ public class SQLHelper {
         String tableName = helper.getTableName(obj);
         Object id = helper.getId(obj);
 
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         sql.append("update ");
         sql.append(tableName);
         sql.append(" set ");
@@ -114,7 +115,7 @@ public class SQLHelper {
      *  查询实体操作
      */
     public <T> T getEntity(Integer id, Class<T> clazz) throws SQLException {
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         String tableName = clazz.getAnnotation(Table.class).value();
         sql.append("select * from ");
         sql.append(tableName);
@@ -126,7 +127,7 @@ public class SQLHelper {
      *  查询实体操作(返回list)
      */
     public <T> List<T> getEntity(String condition, Class<T> clazz) throws SQLException {
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         String tableName = clazz.getAnnotation(Table.class).value();
         sql.append("select * from ");
         sql.append(tableName);
@@ -139,7 +140,7 @@ public class SQLHelper {
      * 查询返回Map
      */
     public Map<String, Object> get(Integer id, Class clazz) throws SQLException {
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         Table table = (Table) clazz.getAnnotation(Table.class);
         sql.append("select * from ");
         sql.append(table.value());
@@ -151,13 +152,20 @@ public class SQLHelper {
      * 查询返回Map(返回list)
      */
     public List<Map<String, Object>> get(String condition, Class clazz) throws SQLException {
-        StringBuffer sql = new StringBuffer();
+        StringBuilder sql = new StringBuilder();
         Table table = (Table) clazz.getAnnotation(Table.class);
         sql.append("select * from ");
         sql.append(table.value());
         sql.append(" ");
         sql.append(condition);
         return qr.query(sql.toString(), new MapListHandler());
+    }
+
+    /**
+     * 查询计数
+     */
+    public int getCount(String sql) throws SQLException{
+        return ((Long)qr.query(sql, new ScalarHandler(1))).intValue();
     }
 
     /**
@@ -172,6 +180,45 @@ public class SQLHelper {
      */
     public List<Map<String, Object>> getBySQL(String sql, Object... params) throws SQLException {
         return qr.query(sql.toString(), new MapListHandler());
+    }
+
+    /**
+     * 返回某一列的所有值
+     */
+    public <T> List<T> getColumnData(String columnName, String tableName) throws SQLException {
+        String aliasName = helper.formatStr(columnName);
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ");
+        sql.append(columnName);
+        if(!columnName.equals(aliasName)) {
+            sql.append(" ");
+            sql.append(aliasName);
+        }
+        sql.append(" from ");
+        sql.append(tableName);
+        return qr.query(sql.toString(), new ColumnListHandler<T>());
+    }
+
+    public <T> List<T> getColumnData(String columnName, Class clazz) throws SQLException {
+        String tableName = helper.getTableName(clazz);
+        String aliasName = helper.formatStr(columnName);
+        StringBuilder sql = new StringBuilder();
+        sql.append("select ");
+        sql.append(columnName);
+        if(!columnName.equals(aliasName)) {
+            sql.append(" ");
+            sql.append(aliasName);
+        }
+        sql.append(" from ");
+        sql.append(tableName);
+        return qr.query(sql.toString(), new ColumnListHandler<T>());
+    }
+
+    /**
+     * 自定义SQL返回查询某一列的值
+     */
+    public <T> List<T> getColumnData(String sql) throws SQLException {
+        return qr.query(sql.toString(), new ColumnListHandler<T>());
     }
 
 }

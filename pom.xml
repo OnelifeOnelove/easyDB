@@ -6,7 +6,7 @@
 
     <groupId>com.xyh.easyDB</groupId>
     <artifactId>easyDB</artifactId>
-    <version>0.01-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/commons-configuration/commons-configuration -->
